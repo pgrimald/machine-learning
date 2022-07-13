@@ -1,12 +1,12 @@
 ---
 title: 'Machine Learning - Learning Lab 1 Independent Practice'
-author: ""
+author: "phil grimaldi"
 date: "`r format(Sys.Date(),'%B %e, %Y')`"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=TRUE,echo=FALSE}
+knitr::opts_chunk$set(echo = FALSE,messages = FALSE)
 ```
 
 ![](img/ML_P_Hx.jpg){width="30%"}
@@ -25,14 +25,14 @@ Part A:
 
 1.  How good was the machine learning model we developed in the guiding practice? Would you be comfortable using it to code more conversations? What if you read about someone using such a model as a reviewer of research? Please add your thoughts and reflections following the bullet point below.
 
--   87% accuracy
-- would need to compare to other standards (e.g., human vs. human) to determine how comfortable I'd be using
-_ as a reviewer, I'd want to see more stats on model performance. Accuracy by itself is insufficient. 
+    -   87% accuracy
+    - would need to compare to other standards (e.g., human vs. human) to determine how comfortable I'd be using
+    - as a reviewer, I'd want to see more stats on model performance. Accuracy by itself is insufficient. 
 
 2.  How might the model be improved? Share any ideas you have at this time below:
 
-- adding additional parameters/predictors
-- transformations of the existing predictors
+    - adding additional parameters/predictors
+    - transformations of the existing predictors
 
 
 Part B: Use the institutional library (e.g. [NCSU Library](https://www.lib.ncsu.edu/#articles)), [Google Scholar](https://scholar.google.com/) or search engine to locate a research article, presentation, or resource that applies machine learning to an educational context aligned with your research interests. More specifically, **locate a machine learning study that involve making predictions**.
@@ -62,8 +62,8 @@ library(here)
 library(readr)
 library(tidymodels)
 
+# final_fit <- read_rds("lab-1/out/ngsschat-final-fit.rds")
 final_fit <- read_rds("out/ngsschat-final-fit.rds")
-
 final_fit
 ```
 
@@ -76,19 +76,22 @@ final_fit$.predictions[[1]] %>%
 
 Please interpret the above confusion matrix using [these guidelines](https://towardsdatascience.com/understanding-confusion-matrix-a9ad42dcfd62) in terms of the true positive, true negative, false positive, and false negative rates. After each of the following (i.e., "True positive"), add both the *number* and percentage of observations. For instance, if there were 100 true positives out of a total of 400 data points, please write: 100 (25%).
 
-**True positive**:
+**True positive**: `r paste0(260," (",round((260/759)*100,1),"%",")")`
 
-**True negative**:
+**True negative**: `r paste0(402," (",round((402/759)*100,1),"%",")")`
 
-**False positive**:
+**False positive**: `r paste0(60," (",round((60/759)*100,1),"%",")")`
 
-**False negative**:
+**False negative**: `r paste0(37," (",round((37/759)*100,1),"%",")")`
 
 You can read more about interpreting these [here](https://bradleyboehmke.github.io/HOML/process.html#classification-models) in terms of the specificity, sensitivity, precision, and recall, four statistics based on the information in the confusion matrix.
 
 Return to your answer for Part 1A. Now, having examined the true and false positive and negative rates, how good do you think machine learning model we developed in the case study was? Write more specifically using the evidence you have from creating and interpreting the confusion matrix (above) after the following bullet point.
 
--   
+
+*  They were specifically trying to outperform existing methods
+* the errors appear to be nicely balanced between false positives and false negatives, which is good. it tends more to err on the side of false positives (i.e., accidentally labeling TS as SB)
+
 
 ### Knit & Submit
 
