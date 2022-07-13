@@ -25,25 +25,31 @@ Part A:
 
 1.  How good was the machine learning model we developed in the guiding practice? Would you be comfortable using it to code more conversations? What if you read about someone using such a model as a reviewer of research? Please add your thoughts and reflections following the bullet point below.
 
--   
+-   87% accuracy
+- would need to compare to other standards (e.g., human vs. human) to determine how comfortable I'd be using
+_ as a reviewer, I'd want to see more stats on model performance. Accuracy by itself is insufficient. 
 
 2.  How might the model be improved? Share any ideas you have at this time below:
 
--   
+- adding additional parameters/predictors
+- transformations of the existing predictors
+
 
 Part B: Use the institutional library (e.g. [NCSU Library](https://www.lib.ncsu.edu/#articles)), [Google Scholar](https://scholar.google.com/) or search engine to locate a research article, presentation, or resource that applies machine learning to an educational context aligned with your research interests. More specifically, **locate a machine learning study that involve making predictions**.
 
 1.  Provide an APA citation for your selected study.
 
-    -   
+    -   Piech, C., Bassen, J., Huang, J., Ganguli, S., Sahami, M., Guibas, L. J., & Sohl-Dickstein, J. (2015). Deep knowledge tracing. Advances in neural information processing systems, 28.
 
 2.  What research questions were the authors of this study trying to address and why did they consider these questions important?
 
-    -   
+    -   The authors were trying to model student knowledge using RNNs over time in order to predict how students will perform on future interactions.
+    -   They were specifically trying to outperform existing methods
 
 3.  What were the results of these analyses?
 
-    -   
+    -   RNN model outperformed BKT and other methods in terms to predictive accuracy
+    -   They also were able to use the model summary to generate a pre-requisite network structure of the content
 
 ### Part II: Data Product
 
