@@ -1,8 +1,10 @@
 ---
-title: 'Machine Learning - Learning Lab 4 Badge'
-author: ""
+title: 'Machine Learning - Learning Lab 3 Badge'
+author: "Phil Grimaldi"
 date: "`r format(Sys.Date(),'%B %e, %Y')`"
-output: html_document
+output: 
+    html_document:
+        code_folding: hide
 ---
 
 ```{r setup, include=FALSE}
@@ -23,25 +25,25 @@ Part A:
 
 1.  Like after each of the previous two learning labs, please interpret the predictive accuracy of the model. How much better was it relative to the untuned model? Was tuning worth the investment.
 
--   
+-   The best tuned model was around 88.6% accurate and the worst was 86.7%, so about a 2% point boost in performance. Was it worth the investment? Maybe. Depends on how it will be used. 
 
 2.  Please interpret the fit metrics other than accuracy. What do the Kappa, sensitivity, specificity, and AOC tell us about the predictive accuracy of the model?
 
--   
+-   Kappa (.75) gives a sense of the agreement between the model and truth, accounting for chance. It does pretty well here. Sensitivity (0.89) and specificity (.86) are measures of the type of errors it gives. AUC (.932) computes the sensitivity-specificity tradeoff, and it does really well here.  
 
 Part B: Once again, use the institutional library (e.g. [NCSU Library](https://www.lib.ncsu.edu/#articles)), [Google Scholar](https://scholar.google.com/) or search engine to locate a research article, presentation, or resource that applies machine learning to an educational context aligned with your research interests. More specifically, **locate a machine learning study that involve making predictions -- and, ideally, one that utilizes a random forest**.
 
 1.  Provide an APA citation for your selected study.
 
-    -   
+    -   Zhang, C., Huang, Y., Wang, J., Lu, D., Fang, W., Stamper, J., Fancsali, S., Holstein, K., Aleven, V.: Early detection of wheel spinning: Comparison across tutors, models, features, and operationalizations. EDM, 2019
 
 2.  What research questions were the authors of this study trying to address and why did they consider these questions important?
 
-    -   
+    -   They were trying to detect “Wheel spinning”, which is the phenomenon in which a student fails to master a Knowledge Component (KC), despite significant practice. This is important because you don't want students spending unneccessary time in a task. 
 
 3.  What were the results of these analyses?
 
-    -   
+    -   They compared several models aimed at early detection of wheel spinning, including Random Forest and Logistic Regression. The two most accurate models were Random Forest and Multi-Layer Perceptron. Random Forest had Precision/recall of 77.2% and 63.5% on one outcome, and precision/recall of 90.8% and 81.4% on another. 
 
 ### Part II: Data Product
 
@@ -55,38 +57,28 @@ Documentation for a neural network engine we recommend - keras - is [here](https
 
 **Prepare**
 
-```{r}
+```{r random-forest approach, eval=FALSE, include=FALSE}
 library(tidyverse)
 library(tidymodels)
 library(vip) # a new package we're adding for variable importance measures
+setwd("~/Documents/GitHub/LASER/machine-learning/lab-3/")
+d <- read_csv("data/ngsschat-processed-data-add-three-features.csv")
 
-d <- read_csv("data/ngsschat-processed-data.csv")
-```
-
-**Split data**
-
-```{r}
 train_test_split <- initial_split(d, prop = .80)
 data_train <- training(train_test_split)
 
 kfcv <- vfold_cv(data_train) # again, we will use resampling
-```
 
-**Engineer features**
-
-```{r}
+#Engineer features
 my_rec <- recipe(code ~ ., data = data_train) %>% 
     step_normalize(all_numeric_predictors()) %>%
     step_nzv(all_predictors())
-```
 
-**Specify recipe, model, and workflow**
-
-```{r}
 # specify model
 my_mod <-
     rand_forest(mtry = tune(), # this specifies that we'll take steps later to tune the model
-                min_n = tune()) %>%
+                min_n = tune(),
+                trees = tune()) %>%
     set_engine("ranger", importance = "impurity") %>%
     set_mode("classification")
 
@@ -95,11 +87,7 @@ my_wf <-
     workflow() %>%
     add_model(my_mod) %>% 
     add_recipe(my_rec)
-```
 
-**Fit model**
-
-```{r}
 # specify tuning grid
 finalize(mtry(), data_train)
 finalize(min_n(), data_train)
@@ -117,11 +105,7 @@ fitted_model <- my_wf %>%
         grid = tree_grid,
         metrics = metric_set(roc_auc, accuracy, kap, sensitivity, specificity, precision)
     )
-```
 
-**Fit model (part 2)**
-
-```{r}
 # examine best set of tuning parameters; repeat?
 show_best(fitted_model, n = 10, metric = "accuracy")
 
@@ -135,11 +119,7 @@ final_wf <- my_wf %>%
 
 final_fit <- final_wf %>% 
     last_fit(train_test_split, metrics = metric_set(roc_auc, accuracy, kap, sensitivity, specificity, precision))
-```
 
-**Evaluate accuracy**
-
-```{r}
 # fit stats
 final_fit %>%
     collect_metrics()
@@ -147,13 +127,87 @@ final_fit %>%
 # variable importance plot
 final_fit %>% 
     pluck(".workflow", 1) %>%   
-    pull_workflow_fit() %>% 
+    pull_workflow_fit() %>%
+    # extract_fit_parsnip()
     vip(num_features = 10)
 ```
 
+```{r neural-network, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(tidymodels)
+library(vip) # a new package we're adding for variable importance measures
+setwd("~/Documents/GitHub/LASER/machine-learning/lab-3/")
+d <- read_csv("data/ngsschat-processed-data-add-three-features.csv")
+
+train_test_split <- initial_split(d, prop = .80)
+data_train <- training(train_test_split)
+
+kfcv <- vfold_cv(data_train,v = 3) # again, we will use resampling
+
+#Engineer features
+my_rec <- recipe(code ~ ., data = data_train) %>% 
+    step_normalize(all_numeric_predictors()) %>%
+    step_nzv(all_predictors())
+
+# specify model
+my_mod <-
+    mlp(
+      hidden_units = tune(),
+      penalty = .01,
+      # dropout = .01,
+      epochs = 25,
+      activation = "softmax"
+    ) %>% 
+    set_engine("keras") %>% 
+    set_mode("classification")
+    
+# specify workflow
+my_wf <-
+    workflow() %>%
+    add_model(my_mod) %>% 
+    add_recipe(my_rec)
+
+# specify tuning grid
+
+tree_grid <- grid_max_entropy(hidden_units(range(1, 10)),
+                              size = 10)
+
+
+
+# fit model with tune_grid
+fitted_model <- my_wf %>% 
+    tune_grid(
+        resamples = kfcv,
+        grid = tree_grid,
+        metrics = metric_set(roc_auc, accuracy, kap, sensitivity, specificity, precision)
+    )
+
+
+# examine best set of tuning parameters; repeat?
+# show_best(fitted_model, n = 10, metric = "accuracy")
+
+# select best set of tuning parameters
+best_tree <- fitted_model %>% 
+    select_best(metric = "accuracy")
+
+# finalize workflow with best set of tuning parameters
+final_wf <- my_wf %>% 
+    finalize_workflow(best_tree)
+
+final_fit <- final_wf %>% 
+    last_fit(train_test_split, metrics = metric_set(roc_auc, accuracy, kap, sensitivity, specificity, precision))
+
+# fit stats
+final_fit %>%
+    collect_metrics()
+
+```
+
+
+
 Did specifying and tuning a neural network make any difference compared to the mean predictive accuracy you found in the case study? Add a few notes below:
 
--   
+-   The best fitting model in this case was ~85% accurate, which was slightly lower than the random forest in the case study. I did not do much tuning, and only did a few folds, so its possible I may be able to improve it. 
 
 ### Knit & Submit
 
