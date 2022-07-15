@@ -124,7 +124,7 @@ set.seed(20220712)
 train_test_split <- initial_split(d, prop = .80)
 data_train <- training(train_test_split)
 
-<replace this line with your kfcv code!>
+kfcv <- vfold_cv(data_train, v = 5) # this differentiates this from what we did before
 ```
 
 ## Step 2: Engineer features
@@ -211,9 +211,9 @@ replace the `xx` values below with the *minimum* and *maximum* value provided by
 simply a combination of values of the hyperparameters.
 
 ```{r}
-tree_grid <- grid_max_entropy(mtry(range(xx, xx)),
-                              min_n(range(xx, xx)),
-                              trees(range(xx, xx)),
+tree_grid <- grid_max_entropy(mtry(range(1, 5)),
+                              min_n(range(2, 40)),
+                              trees(range(1, 2000)),
                               size = 10)
 ```
 
@@ -238,7 +238,7 @@ parameters *ranked by their predictive accuracy*.
 
 ```{r}
 # examine best set of tuning parameters; repeat?
-show_best(fitted_model, n = 10, metric = "accuracy")
+show_best(fitted_model, n = 100, metric = "accuracy")
 ```
 
 This function simply indicates that you want to use the best of the sets
