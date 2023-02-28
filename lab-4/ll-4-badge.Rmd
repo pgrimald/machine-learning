@@ -1,6 +1,6 @@
 ---
 title: 'Machine Learning - Learning Lab 4 Badge'
-author: ""
+author: "phil grimaldi"
 date: "`r format(Sys.Date(),'%B %e, %Y')`"
 output: html_document
 ---
@@ -24,25 +24,26 @@ Part A:
 
 1.  How interpretable or useful is the solution we estimated in the case study? 
 
--   
+-   it seems useful on the surface, as several of the classes are clearly distinct (particularly 1 and 4). However, what makes the other two classes distinct is sort of muddy. also, some of the results seem counter-intuitive. E.g., class 4 is high on correctness and but also on carelessness, which seems antithetical. 
 
 2.  How might a qualitative analysis follow from the Latent Profile Analysis we carried out? What steps could you take in a qualitative investigation? Feel free to think broadly and creatively here!
 
--   
+-   several columns were dropped in the original dataset. I might look sto see if there are differences between the classes on some of those measures 
+-   as i mentioned before, some of the results seem counterintuitive, so i would likely go back and double check there wasn't an issue with the scaling and that the interpretation is correct. 
 
 Part B: Once again, use the institutional library (e.g. [NCSU Library](https://www.lib.ncsu.edu/#articles)), [Google Scholar](https://scholar.google.com/) or search engine to locate a research article, presentation, or resource that applies unsupervised machine learning to an educational context aligned with your research interests. More specifically, **locate a machine learning study that involve using Latent Profile Analysis or a similar method**. You may find the published papers that have used LPA helpful in this respect; those can be browsed [here](https://scholar.google.com/scholar?hl=en&as_sdt=0%2C34&q=tidylpa&btnG=). 
 
 1.  Provide an APA citation for your selected study.
 
-    -   
+    -   Liu, F., Yang, D., Liu, Y. et al. Use of latent profile analysis and k-means clustering to identify student anxiety profiles. BMC Psychiatry 22, 12 (2022). https://doi.org/10.1186/s12888-021-03648-7
 
 2.  What research questions were the authors of this study trying to address and why did they consider these questions important?
 
-    -   
+    -   The study was largely exploratory, and the authors did not explictly state any research questions. however, they are broadly insterestied in understanding student anxiety for the purpose of promoting psychological well-being and creating targeted interventions.
 
 3.  What were the results of these analyses?
 
-    -   
+    -  they used LPA to create 3 different anxiety profiles (low, mild, and high risk). The low risk profile tended to be lower on all dimensions, while the mild and high risk differed the most on body anxiety, phobia ansiety, and impulsive tendencies.   
 
 ### Part II: Data Product
 
@@ -50,17 +51,18 @@ Like the last data product, this one may be a challenge, too. Here, estimate lat
 
 Some code is provided below as a starting point.
 
+
 ```{r}
 library(tidyverse)
 library(tidyLPA)
 
-d <- read_csv("data/dat_csv_combine_final_full.csv")
+data <- read_csv("data/survey.csv")
 
-d <- d %>% 
-    select(AveCarelessness, AveKnow, AveCorrect = AveCorrect.x, AveResBored, 
-           AveResEngcon, AveResConf, AveResFrust, AveResOfftask, 
-           AveResGaming, NumActions) %>%
-    janitor::clean_names()
+data %>% glimpse()
+
+data <- data %>% 
+    select(q1,q2,q3,q4,q5,q6,q7,q8,q9,q10)
+
 
 scale_data <- function(x) {
     x = x - mean(x, na.rm = TRUE)
@@ -68,25 +70,36 @@ scale_data <- function(x) {
     x
 }
 
-d <- d %>%
+data <- data %>%
     mutate_all(funs(scaled = scale_data)) %>% # using our function to scale all of the variables
     select(contains("_scaled")) # selecting only the scaled version
 
-d %>%
-    estimate_profiles(1:10) %>% 
-    compare_solutions()
 
-our_solution <- d %>%
-    estimate_profiles(4)
+# complete cases only
+data <- data[complete.cases(data), ]
 
-plot_profiles(our_solution, add_line = TRUE) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1))
 ```
+
 
 Please interpret the results of your analysis below. What did you find? How interpretable and useful are the profiles? And, what next steps - including those involving qualitative analysis - might you take to deepen this analysis?
 
--   
+-   i used the survey.csv data. I'm not exactly sure what the questions were so my ability to interpret is limited
 
+```{r}
+data %>%
+    estimate_profiles(1:10) %>% 
+    compare_solutions()
+```
+- Across 10 possible profile sizes, 3 seemed to be the best. marginal improvements with 4, but not that much. after that BIC started to increase.  
+
+```{r}
+our_solution <- data %>%
+    estimate_profiles(3)
+
+plot_profiles(our_solution, add_line = TRUE)
+```
+
+There seems to be a clear distinction with each class across all questions. Class 3 > Class 1 > Class 2. However, the biggest distinction appears on Q8. 
 ### Knit & Submit
 
 Congratulations, you've completed your Prediction badge! Complete the following steps to submit your work for review:
